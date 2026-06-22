@@ -1,0 +1,2636 @@
+<!doctype html>
+<html lang="es" class="h-full bg-slate-900 text-slate-100">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PÁDELPRO</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Vue.js 3 CDN (jsDelivr - El CDN más rápido y estable del mundo) -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
+      [v-cloak] {
+        display: none;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #10b981;
+      }
+    </style>
+  </head>
+
+  <body class="h-full flex flex-col bg-slate-900 text-slate-100 antialiased">
+    <!-- PANTALLA DE CARGA Y CONTROL DE ERRORES SENSORIAL -->
+    <div
+      id="loading-fallback"
+      class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 p-4"
+    >
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-t-2 border-emerald-500 mb-4"
+      ></div>
+      <p class="text-slate-400 text-sm font-medium">
+        Iniciando Pádel League...
+      </p>
+    </div>
+
+    <!-- APP PRINCIPAL VUE -->
+    <div id="app" class="flex flex-col min-h-screen" v-cloak>
+      <!-- Header Principal -->
+      <header
+        class="bg-slate-950 border-b border-slate-800 sticky top-0 z-40 shadow-lg"
+      >
+        <div
+          class="max-w-4xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20"
+            >
+              <svg
+                class="w-8 h-8"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 2a7 7 0 0 1 7 7c0 3.5-2.5 6.5-6 6.9V22h-2v-6.1c-3.5-.4-6-3.4-6-6.9a7 7 0 0 1 7-7z"
+                />
+                <circle cx="12" cy="7" r="0.5" fill="currentColor" />
+                <circle cx="10" cy="9" r="0.5" fill="currentColor" />
+                <circle cx="14" cy="9" r="0.5" fill="currentColor" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-xl font-black tracking-tight text-white">
+                PÁDEL<span class="text-emerald-400">PRO</span>
+              </h1>
+            </div>
+          </div>
+
+          <!-- Menú Navegación -->
+          <nav
+            class="flex space-x-1 bg-slate-900 p-1 rounded-xl border border-slate-800 w-full md:w-auto overflow-x-auto"
+          >
+            <button
+              @click="currentTab = 'ranking'"
+              :class="currentTab === 'ranking' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+              class="flex-1 md:flex-initial px-3.5 py-2 text-xs rounded-lg transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-1"
+            >
+              <span>🏆</span> Clasificación
+            </button>
+            <button
+              @click="currentTab = 'players'"
+              :class="currentTab === 'players' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+              class="flex-1 md:flex-initial px-3.5 py-2 text-xs rounded-lg transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-1"
+            >
+              <span>👥</span> Jugadores
+            </button>
+            <button
+              @click="currentTab = 'new-round'"
+              :class="currentTab === 'new-round' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+              class="flex-1 md:flex-initial px-3.5 py-2 text-xs rounded-lg transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-1"
+            >
+              <span>🎾</span> Jugar
+            </button>
+            <button
+              @click="currentTab = 'active-round'"
+              :class="currentTab === 'active-round' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+              class="flex-1 md:flex-initial px-3.5 py-2 text-xs rounded-lg transition-all duration-200 relative whitespace-nowrap flex items-center justify-center gap-1"
+            >
+              <span>⚔️</span> Pista Activa
+              <span
+                v-if="activeRound"
+                class="absolute -top-1 -right-1 flex h-3 w-3"
+              >
+                <span
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+                ></span>
+                <span
+                  class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"
+                ></span>
+              </span>
+            </button>
+            <button
+              @click="currentTab = 'history'"
+              :class="currentTab === 'history' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
+              class="flex-1 md:flex-initial px-3.5 py-2 text-xs rounded-lg transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-1"
+            >
+              <span>📂</span> Historial
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="flex-grow max-w-4xl w-full mx-auto p-4 pb-20">
+        <!-- NOTIFICACIONES TOAST -->
+        <transition name="fade">
+          <div
+            v-if="toastMessage"
+            class="fixed bottom-6 right-6 z-50 bg-slate-800 border-l-4 border-emerald-500 text-slate-100 px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 max-w-sm"
+          >
+            <svg
+              class="w-6 h-6 text-emerald-400 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <span class="text-xs font-semibold">{{ toastMessage }}</span>
+          </div>
+        </transition>
+
+        <!-- VISTA: RANKING / CLASIFICACIÓN GENERAL -->
+        <section v-if="currentTab === 'ranking'" class="space-y-6">
+          <!-- Banner Competitivo LoL -->
+          <div
+            class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-6 rounded-3xl border border-slate-800/80 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6"
+          >
+            <div class="space-y-2 text-center md:text-left">
+              <div
+                class="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider border border-emerald-500/20"
+              >
+                🛡️ Divisiones Competitivas SoloQ
+              </div>
+              <h2 class="text-2xl font-black text-white">
+                Clasificación de jugadores
+              </h2>
+              <p class="text-xs text-slate-400 max-w-md">
+                Suma victorias para ascender en la clasificación divisional (IV
+                a I) y alcanzar el rango Aspirante.
+              </p>
+            </div>
+            <!-- Guía rápida de colores de rango -->
+            <div
+              class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 flex flex-wrap gap-2 justify-center max-w-sm"
+            >
+              <span
+                class="text-[9px] px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-400 font-bold"
+                >Hierro</span
+              >
+              <span
+                class="text-[9px] px-2 py-0.5 rounded bg-amber-950/20 border border-amber-900/30 text-amber-600 font-bold"
+                >Bronce</span
+              >
+              <span
+                class="text-[9px] px-2 py-0.5 rounded bg-zinc-800/20 border border-zinc-700/30 text-zinc-300 font-bold"
+                >Plata</span
+              >
+              <span
+                class="text-[9px] px-2 py-0.5 rounded bg-yellow-950/20 border border-yellow-850 text-yellow-400 font-bold"
+                >Oro</span
+              >
+              <span
+                class="text-[9px] px-2 py-0.5 rounded bg-cyan-950/20 border border-cyan-850 text-cyan-400 font-bold"
+                >Platino</span
+              >
+              <span
+                class="text-[9px] px-2 py-0.5 rounded bg-blue-950/20 border border-blue-850 text-blue-400 font-bold"
+                >Diamante</span
+              >
+              <span
+                class="text-[9px] px-2 py-0.5 rounded bg-fuchsia-950/20 border border-fuchsia-850 text-fuchsia-400 font-bold"
+                >Maestro+</span
+              >
+            </div>
+          </div>
+
+          <!-- Tabla de Clasificación General -->
+          <div
+            class="bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-xl space-y-6"
+          >
+            <div
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            >
+              <div>
+                <h3 class="text-lg font-extrabold text-white">
+                  Tabla de Clasificación
+                </h3>
+                <p class="text-xs text-slate-400 mt-1">
+                  Suma de Victorias (+15 LP) y Puntos de Pista (+2 LP)
+                  conseguidos.
+                </p>
+              </div>
+              <!-- Filtro de jugadores -->
+              <div class="w-full sm:w-60 relative">
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Buscar jugador..."
+                  class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                />
+                <svg
+                  class="w-5 h-5 text-slate-500 absolute left-3 top-2.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Lista de Jugadores Ordenados por Rango de LoL -->
+            <div class="space-y-4">
+              <div
+                v-if="sortedPlayersByRank.length === 0"
+                class="text-center py-12 text-slate-500 border border-dashed border-slate-800 rounded-2xl"
+              >
+                <p class="text-sm">No existe ningún jugador.</p>
+              </div>
+
+              <div
+                v-for="(player, idx) in sortedPlayersByRank"
+                :key="player.id"
+                class="bg-slate-900/60 border border-slate-800 hover:border-slate-700/80 rounded-2xl p-4 transition-all"
+              >
+                <div
+                  class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                >
+                  <!-- Información de Posición, Nombre y Subdivisión -->
+                  <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <!-- Posición en la tabla de clasificación -->
+                    <div
+                      class="w-8 h-8 rounded-full flex items-center justify-center font-black shrink-0 text-sm"
+                      :class="idx === 0 ? 'bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/10' : idx === 1 ? 'bg-slate-300 text-slate-950' : idx === 2 ? 'bg-amber-700 text-white' : 'bg-slate-800 text-slate-400'"
+                    >
+                      {{ idx + 1 }}
+                    </div>
+
+                    <div
+                      class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold flex items-center justify-center text-sm shrink-0 overflow-hidden uppercase"
+                    >
+                      <img
+                        v-if="player.avatar"
+                        :src="player.avatar"
+                        class="w-full h-full object-cover"
+                        alt="Avatar"
+                      />
+
+                      <span v-else>
+                        {{ player.customInitials || getInitials(player.name) }}
+                      </span>
+                    </div>
+
+                    <!-- Nombre y Badge de Rango -->
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-bold text-white text-sm truncate"
+                          >{{ player.name }}</span
+                        >
+                        <!-- Badge con el Rango y Subdivisión (ej: ORO II) -->
+                        <span
+                          :class="getPlayerBadgeClass(player)"
+                          class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase border tracking-wider"
+                        >
+                          {{ getPlayerCategory(player).tier }} {{
+                          getPlayerCategory(player).division }}
+                        </span>
+                      </div>
+                      <div
+                        class="text-[10px] text-slate-400 mt-1 flex items-center gap-2"
+                      >
+                        <span>Mano: <strong>{{ player.hand }}</strong></span>
+                        <span>•</span>
+                        <span class="text-emerald-400 font-bold"
+                          >Porcentaje de victoria: {{ getWinRate(player)
+                          }}%</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Estadísticas Detalladas -->
+                  <div
+                    class="flex items-center gap-6 justify-between w-full sm:w-auto border-t border-slate-800/60 sm:border-0 pt-3 sm:pt-0"
+                  >
+                    <div class="flex gap-4 text-xs">
+                      <div class="text-center">
+                        <span
+                          class="block text-[10px] text-slate-500 font-semibold uppercase"
+                          >Partidos</span
+                        >
+                        <span class="font-bold text-white"
+                          >{{ (player.stats.wins || 0) + (player.stats.losses ||
+                          0) }}</span
+                        >
+                      </div>
+                      <div class="text-center">
+                        <span
+                          class="block text-[10px] text-slate-500 font-semibold uppercase"
+                          >Victorias</span
+                        >
+                        <span class="font-bold text-emerald-400"
+                          >{{ player.stats.wins }}</span
+                        >
+                      </div>
+                      <div class="text-center">
+                        <span
+                          class="block text-[10px] text-slate-500 font-semibold uppercase"
+                          >Ptos Pista</span
+                        >
+                        <span class="font-bold text-teal-400"
+                          >{{ player.stats.points }}</span
+                        >
+                      </div>
+                    </div>
+
+                    <!-- LP acumulados (Experiencia) -->
+                    <div class="text-right">
+                      <span
+                        class="block text-[9px] text-slate-500 uppercase tracking-widest font-black"
+                        >Puntos de Liga</span
+                      >
+                      <span class="text-base font-black text-emerald-400"
+                        >{{ calculateXP(player) }}
+                        <span class="text-xs text-slate-500 font-normal"
+                          >LP</span
+                        ></span
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Barra de progreso divisional -->
+                <div
+                  class="mt-4 pt-3 border-t border-slate-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-400"
+                >
+                  <div
+                    class="w-full sm:max-w-md bg-slate-950 h-2 rounded-full border border-slate-850 overflow-hidden relative"
+                  >
+                    <div
+                      class="bg-gradient-to-r from-emerald-500 to-teal-500 h-full transition-all duration-500"
+                      :style="{ width: getXPPercentToNextLevel(player) + '%' }"
+                    ></div>
+                  </div>
+                  <div
+                    class="shrink-0 flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto"
+                  >
+                    <span
+                      >División:
+                      <strong
+                        >{{ getXPPercentToNextLevel(player) }}%</strong
+                      ></span
+                    >
+                    <span class="text-slate-500">|</span>
+                    <span v-if="getNextCategoryMinXP(player) !== null">
+                      Faltan
+                      <strong
+                        >{{ getNextCategoryMinXP(player) - calculateXP(player)
+                        }} LP</strong
+                      >
+                      para
+                      <strong class="text-emerald-400"
+                        >{{ getNextCategoryName(player) }}</strong
+                      >
+                    </span>
+                    <span v-else class="text-amber-400 font-black"
+                      >👑 ¡Rango Máximo (Aspirante)!</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VISTA: GESTIÓN DE JUGADORES -->
+        <section v-if="currentTab === 'players'" class="space-y-6">
+          <!-- Crear Jugador -->
+          <div
+            class="bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-xl"
+          >
+            <h2
+              class="text-lg font-bold text-white mb-6 flex items-center gap-2"
+            >
+              <span class="text-emerald-400">●</span> Registrar Nuevo Jugador
+            </h2>
+
+            <form @submit.prevent="createPlayer" class="flex flex-col gap-6">
+              <div
+                class="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/50 p-4 rounded-2xl border border-slate-800/60"
+              >
+                <div class="relative w-20 h-20 flex-shrink-0">
+                  <input
+                    type="file"
+                    ref="fileInput"
+                    accept="image/*"
+                    @change="handleAvatarChange"
+                    class="hidden"
+                  />
+
+                  <div
+                    @click="triggerFileInput"
+                    class="w-full h-full rounded-full overflow-hidden border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-900 transition-all cursor-pointer flex items-center justify-center relative group"
+                  >
+                    <img
+                      v-if="avatarPreview"
+                      :src="avatarPreview"
+                      class="w-full h-full object-cover"
+                    />
+
+                    <div
+                      v-else
+                      class="w-full h-full flex items-center justify-center text-xl font-black tracking-wider text-emerald-400 bg-emerald-500/10 uppercase"
+                    >
+                      {{ newPlayer.customInitials || getInitials(newPlayer.name)
+                      }}
+                    </div>
+
+                    <div
+                      class="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full"
+                    >
+                      <span
+                        class="text-[10px] font-semibold text-white text-center px-1"
+                        >Subir Foto</span
+                      >
+                    </div>
+                  </div>
+
+                  <button
+                    v-if="avatarPreview"
+                    type="button"
+                    @click="removeAvatar"
+                    class="absolute -top-1 -right-1 bg-rose-500 hover:bg-rose-400 text-white rounded-full p-1 shadow-md transition-colors z-10"
+                  >
+                    <svg
+                      class="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="3"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                  <div>
+                    <p class="text-sm font-medium text-white">
+                      Imagen de Perfil
+                    </p>
+                    <p class="text-xs text-slate-400 mt-1">
+                      Haz clic en el círculo para subir una foto de perfil o
+                      déjalo vacío para usar tus iniciales.
+                    </p>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2"
+                    >
+                      Iniciales Personalizadas
+                      <span class="text-slate-500 lowercase">(Opcional)</span>
+                    </label>
+                    <input
+                      v-model="newPlayer.customInitials"
+                      type="text"
+                      maxlength="2"
+                      :placeholder="getInitials(newPlayer.name)"
+                      class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all uppercase"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label
+                    class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2"
+                    >Nombre completo</label
+                  >
+                  <input
+                    v-model="newPlayer.name"
+                    type="text"
+                    placeholder="Ej: Juan Martín"
+                    required
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2"
+                    >Mano de juego</label
+                  >
+                  <select
+                    v-model="newPlayer.hand"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                  >
+                    <option value="Diestro">Diestro</option>
+                    <option value="Zurdo">Zurdo</option>
+                  </select>
+                </div>
+
+                <div class="flex items-end">
+                  <button
+                    type="submit"
+                    class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-emerald-500/20"
+                  >
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"
+                      ></path>
+                    </svg>
+                    Agregar Jugador
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Modificar Estadísticas Manuales -->
+          <div
+            class="bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-xl space-y-4"
+          >
+            <div>
+              <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <span class="text-emerald-400">●</span> Modificar Historial de
+                Puntos / LP
+              </h2>
+              <p class="text-xs text-slate-400 mt-1">
+                Utiliza este panel de control para importar puntos anteriores o
+                corregir victorias históricas de los jugadores.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Seleccionar Jugador -->
+              <div>
+                <label
+                  class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2"
+                  >Selecciona un jugador</label
+                >
+                <select
+                  v-model="editingPlayerId"
+                  @change="loadPlayerForEditing"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                >
+                  <option value="" disabled>-- Selecciona un jugador --</option>
+                  <option v-for="p in players" :key="p.id" :value="p.id">
+                    {{ p.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Panel de Edición Rápida -->
+              <div
+                v-if="editingPlayer"
+                class="bg-slate-900 p-4 rounded-2xl border border-slate-800/80 grid grid-cols-3 gap-2"
+              >
+                <div>
+                  <label class="block text-[10px] text-slate-400 uppercase mb-1"
+                    >Victorias</label
+                  >
+                  <input
+                    v-model.number="editingPlayer.stats.wins"
+                    type="number"
+                    min="0"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-center font-bold text-emerald-400 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-400 uppercase mb-1"
+                    >Derrotas</label
+                  >
+                  <input
+                    v-model.number="editingPlayer.stats.losses"
+                    type="number"
+                    min="0"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-center font-bold text-red-400 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-400 uppercase mb-1"
+                    >Ptos Pista</label
+                  >
+                  <input
+                    v-model.number="editingPlayer.stats.points"
+                    type="number"
+                    min="0"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-center font-bold text-teal-400 focus:outline-none"
+                  />
+                </div>
+                <div class="col-span-3 pt-2">
+                  <button
+                    @click="saveManualPlayerStats"
+                    class="w-full bg-slate-850 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 text-white font-bold py-2 rounded-xl text-xs transition-all"
+                  >
+                    Aplicar Cambios de Historial
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-xl"
+          >
+            <h2
+              class="text-lg font-bold text-white mb-4 flex items-center gap-2"
+            >
+              <span class="text-emerald-400">●</span> Base de Jugadores
+              Registrados
+            </h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div
+                v-for="player in players"
+                :key="player.id"
+                class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between transition-all group"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-slate-800 text-slate-300 font-bold border border-slate-700 text-sm uppercase flex-shrink-0"
+                  >
+                    <img
+                      v-if="player.avatar"
+                      :src="player.avatar"
+                      class="w-full h-full object-cover"
+                      alt="Avatar"
+                    />
+
+                    <span v-else>
+                      {{ player.customInitials || getInitials(player.name) }}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3
+                      class="font-bold text-white text-sm group-hover:text-emerald-400 transition-colors"
+                    >
+                      {{ player.name }}
+                    </h3>
+                    <span
+                      class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50"
+                    >
+                      {{ player.hand }}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  @click="deletePlayer(player.id)"
+                  class="text-slate-500 hover:text-red-400 p-2 rounded-lg hover:bg-slate-800 transition-all"
+                  title="Eliminar Jugador"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VISTA: NUEVA RONDA (SELECCIONAR JUGADORES) -->
+        <section v-if="currentTab === 'new-round'" class="space-y-6">
+          <!-- Selección de Jugadores -->
+          <div
+            class="bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-xl"
+          >
+            <div
+              class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4"
+            >
+              <div>
+                <h2
+                  class="text-lg font-bold text-white flex items-center gap-2"
+                >
+                  <span class="text-emerald-400">●</span> Seleccionar 4 o 6
+                  jugadores para participar.
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">
+                  Elige 4 o 6 jugadores para crear automáticamente la rotación
+                  de partidos al mejor de 3 puntos.
+                </p>
+              </div>
+              <div
+                class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-2"
+              >
+                <span class="text-xs text-slate-400">Seleccionados:</span>
+                <span
+                  :class="isValidSelection ? 'bg-emerald-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300'"
+                  class="text-xs px-2 py-0.5 rounded-lg transition-all"
+                >
+                  {{ selectedPlayerIds.length }} seleccionados
+                </span>
+              </div>
+            </div>
+
+            <!-- Grid de Selección -->
+            <div
+              v-if="players.length < 4"
+              class="text-center py-12 text-slate-500 border border-dashed border-slate-800 rounded-xl"
+            >
+              <svg
+                class="w-12 h-12 mx-auto text-slate-600 mb-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                ></path>
+              </svg>
+              <p class="text-sm font-medium">
+                Se necesitan mínimo 4 jugadores registrados.
+              </p>
+              <p class="text-xs text-slate-600 mt-1">
+                Registra más competidores en la pestaña de "Jugadores" para
+                poder montar la rotación.
+              </p>
+            </div>
+
+            <div
+              v-else
+              class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1"
+            >
+              <div
+                v-for="player in players"
+                :key="player.id"
+                @click="togglePlayerSelection(player.id)"
+                :class="selectedPlayerIds.includes(player.id) ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-800 bg-slate-900 hover:border-slate-700'"
+                class="border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all select-none"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    :class="[
+      selectedPlayerIds.includes(player.id) 
+        ? 'bg-emerald-500 text-slate-950 border-2 border-emerald-400 shadow-md shadow-emerald-500/10' 
+        : 'bg-slate-800 text-slate-400 border border-slate-700',
+      'w-8 h-8 rounded-full font-bold flex items-center justify-center text-xs transition-all shrink-0 overflow-hidden uppercase'
+    ]"
+                  >
+                    <img
+                      v-if="player.avatar"
+                      :src="player.avatar"
+                      class="w-full h-full object-cover"
+                      :class="selectedPlayerIds.includes(player.id) ? 'opacity-90' : ''"
+                      alt="Avatar"
+                    />
+
+                    <span v-else>
+                      {{ player.customInitials || getInitials(player.name) }}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span
+                      class="font-semibold text-sm transition-colors"
+                      :class="selectedPlayerIds.includes(player.id) ? 'text-emerald-400' : 'text-white'"
+                    >
+                      {{ player.name }}
+                    </span>
+                    <span class="text-[10px] block text-slate-400">
+                      Rango: {{ getPlayerCategory(player).tier }} {{
+                      getPlayerCategory(player).division }} ({{
+                      calculateXP(player) }} LP)
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    v-if="selectedPlayerIds.includes(player.id)"
+                    class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div
+                    v-else
+                    class="w-6 h-6 rounded-full border border-slate-700"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vista previa de la Rotación -->
+          <div
+            v-if="isValidSelection"
+            class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4"
+          >
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span class="text-emerald-400">●</span> Partidos de la Rotación
+            </h2>
+            <p class="text-xs text-slate-400">
+              Se crearán
+              <strong class="text-emerald-400"
+                >{{ previewMatches.length }} partidos</strong
+              >. {{ rotationSummaryText }} El desempate se hará por
+              <strong class="text-emerald-400">Puntos de juego hechos</strong>
+              si empatan en victorias.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+              <div
+                v-for="(match, index) in previewMatches"
+                :key="index"
+                class="bg-slate-900 border border-slate-800 rounded-xl p-4"
+              >
+                <div
+                  class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3 border-b border-slate-800/80 pb-2 flex justify-between"
+                >
+                  <span>Partido {{ index + 1 }}</span>
+                  <span class="text-[10px] text-slate-500">Pareja A vs B</span>
+                </div>
+                <div class="space-y-2">
+                  <div
+                    class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-xs font-semibold text-white flex flex-col gap-0.5"
+                  >
+                    <span class="truncate">{{ getPlayerName(match.pA1) }}</span>
+                    <span class="truncate">{{ getPlayerName(match.pA2) }}</span>
+                  </div>
+                  <div class="text-center text-[10px] font-bold text-slate-600">
+                    VS
+                  </div>
+                  <div
+                    class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-xs font-semibold text-white flex flex-col gap-0.5"
+                  >
+                    <span class="truncate">{{ getPlayerName(match.pB1) }}</span>
+                    <span class="truncate">{{ getPlayerName(match.pB2) }}</span>
+                  </div>
+                  <p
+                    v-if="match.resting && match.resting.length"
+                    class="text-[10px] text-slate-500 pt-1"
+                  >
+                    Descansan:
+                    <strong class="text-slate-300"
+                      >{{ formatPlayerList(match.resting) }}</strong
+                    >
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reglamento Activo -->
+            <div
+              class="bg-slate-900/50 border border-slate-800 p-4 rounded-xl text-xs space-y-2 text-slate-400"
+            >
+              <p class="font-bold text-white text-sm flex items-center gap-1.5">
+                <span>⚙|</span> Sistema de Puntuación de la Temporada:
+              </p>
+              <ul class="list-disc list-inside space-y-1">
+                <li>
+                  Formato:
+                  <strong class="text-white"
+                    >Al mejor de 3 puntos (Máximo 2-1 o 2-0).</strong
+                  >
+                </li>
+                <li>
+                  Victoria del partido:
+                  <strong class="text-white">+1 Victoria</strong> para cada
+                  miembro de la pareja ganadora.
+                </li>
+                <li>
+                  Puntuación individual:
+                  <strong class="text-emerald-400"
+                    >Cada jugador suma tantos puntos de juego como consiga su
+                    pareja</strong
+                  >
+                  (0, 1 o 2).
+                </li>
+                <li>
+                  Ascenso Divisional (LP):
+                  <strong class="text-emerald-400"
+                    >Cada victoria otorga 15 LP. Cada punto de pista otorga 2
+                    LP.</strong
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <!-- Botón de Inicio -->
+            <div class="pt-2 flex justify-end">
+              <button
+                @click="startRound"
+                class="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-extrabold px-8 py-3.5 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                  ></path>
+                </svg>
+                ¡Iniciar Partida de Liga!
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- VISTA: RONDA ACTIVA -->
+        <section v-if="currentTab === 'active-round'" class="space-y-6">
+          <!-- Sin Ronda Activa -->
+          <div
+            v-if="!activeRound"
+            class="text-center py-16 bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4"
+          >
+            <div
+              class="w-16 h-16 bg-slate-900 rounded-full border border-slate-800 flex items-center justify-center mx-auto text-slate-600"
+            >
+              <svg
+                class="w-8 h-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                ></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white">
+                No hay ninguna ronda en juego
+              </h3>
+              <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                Selecciona 4 jugadores en la pestaña "Jugar" para empezar a
+                registrar los sets de la partida.
+              </p>
+            </div>
+            <button
+              @click="currentTab = 'new-round'"
+              class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition-all"
+            >
+              Ir a Selección de Jugadores
+            </button>
+          </div>
+
+          <!-- Ronda en Curso -->
+          <div v-else class="space-y-6">
+            <!-- Cabecera de la Ronda Activa -->
+            <div
+              class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div>
+                <div class="flex items-center gap-2">
+                  <span
+                    class="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20"
+                    >En curso</span
+                  >
+                  <span class="text-xs text-slate-400"
+                    >Iniciada: {{ formatDate(activeRound.date) }}</span
+                  >
+                </div>
+                <h2 class="text-xl font-bold text-white mt-1">
+                  Partida Activa (Al mejor de 3 ptos)
+                </h2>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  @click="confirmCancelRound"
+                  class="bg-slate-900 hover:bg-red-950 border border-slate-800 hover:border-red-500/30 text-slate-400 hover:text-red-400 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                >
+                  Cancelar Partida
+                </button>
+                <button
+                  v-if="roundProgress === 100"
+                  @click="finishRound"
+                  class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold px-5 py-2 rounded-xl text-xs transition-all shadow-md"
+                >
+                  Finalizar y Guardar Resultados
+                </button>
+              </div>
+            </div>
+
+            <!-- Panel de Clasificación provisional de esta Ronda -->
+            <div
+              class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4"
+            >
+              <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2"
+              >
+                <h3
+                  class="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2"
+                >
+                  <span class="text-emerald-400">🏆</span> Marcador de la Ronda
+                </h3>
+                <span
+                  class="text-[10px] text-slate-400 bg-slate-900 px-2 py-1 rounded-lg border border-slate-800"
+                >
+                  Desempate: Más victorias > Más puntos de juego
+                </span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr
+                      class="border-b border-slate-800 text-[10px] uppercase font-bold tracking-wider text-slate-400"
+                    >
+                      <th class="py-3 pl-2">Jugador</th>
+                      <th class="py-3 text-center">PJ</th>
+                      <th class="py-3 text-center text-emerald-400">
+                        Victorias (V)
+                      </th>
+                      <th class="py-3 text-center text-slate-400">
+                        Derrotas (D)
+                      </th>
+                      <th class="py-3 text-center text-emerald-400">
+                        Puntos Conseguidos (P)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/50 text-sm">
+                    <tr
+                      v-for="(pStats, idx) in activeRoundLeaderboard"
+                      :key="pStats.id"
+                      class="hover:bg-slate-900/40"
+                    >
+                      <td
+                        class="py-3 pl-2 font-semibold text-white flex items-center gap-2"
+                      >
+                        <span
+                          :class="idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-600' : 'text-slate-500'"
+                          class="text-xs font-bold"
+                        >
+                          {{ idx + 1 }}º
+                        </span>
+                        {{ pStats.name }}
+                      </td>
+                      <td class="py-3 text-center text-slate-300">
+                        {{ pStats.played }}
+                      </td>
+                      <td
+                        class="py-3 text-center font-bold text-emerald-400 text-base"
+                      >
+                        {{ pStats.wins }}
+                      </td>
+                      <td class="py-3 text-center text-slate-400">
+                        {{ pStats.losses }}
+                      </td>
+                      <td
+                        class="py-3 text-center font-extrabold text-white text-base bg-emerald-500/5"
+                      >
+                        {{ pStats.points }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Progreso de la Ronda -->
+            <div
+              class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-2"
+            >
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-400">Progreso de la rotación</span>
+                <span class="font-bold text-emerald-400"
+                  >{{ completedMatchesCount }} / {{ activeRound.matches.length
+                  }} partidos completados</span
+                >
+              </div>
+              <div
+                class="w-full bg-slate-900 rounded-full h-2 border border-slate-800 overflow-hidden"
+              >
+                <div
+                  class="bg-emerald-500 h-full transition-all duration-500"
+                  :style="{ width: roundProgress + '%' }"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Panel de Marcadores Activos -->
+            <div class="space-y-4">
+              <h3
+                class="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2"
+              >
+                <span class="text-emerald-400">🎾</span> Partidos
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div
+                  v-for="(match, index) in activeRound.matches"
+                  :key="index"
+                  :class="match.finished ? 'border-slate-800 bg-slate-950/50 opacity-90' : 'border-slate-700 bg-slate-950 shadow-2xl ring-1 ring-emerald-500/10'"
+                  class="border rounded-2xl p-4 flex flex-col justify-between transition-all"
+                >
+                  <div>
+                    <!-- Cabecera de cada partido -->
+                    <div
+                      class="flex justify-between items-center border-b border-slate-800 pb-2 mb-4"
+                    >
+                      <span class="text-xs font-black text-emerald-400"
+                        >PARTIDO {{ index + 1 }}</span
+                      >
+                      <span
+                        :class="match.finished ? 'bg-slate-900 text-slate-400 border-slate-800' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 animate-pulse'"
+                        class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border"
+                      >
+                        {{ match.finished ? 'Finalizado' : 'Jugando' }}
+                      </span>
+                    </div>
+
+                    <p
+                      v-if="match.resting && match.resting.length"
+                      class="text-[10px] text-slate-500 mb-3"
+                    >
+                      Descansan:
+                      <strong class="text-slate-300"
+                        >{{ formatPlayerList(match.resting) }}</strong
+                      >
+                    </p>
+
+                    <!-- Enfrentamientos y Control de Puntuación al mejor de 3 -->
+                    <div class="space-y-4">
+                      <!-- Pareja A -->
+                      <div
+                        class="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-2"
+                      >
+                        <span
+                          class="text-[9px] text-slate-500 uppercase tracking-widest block font-bold"
+                          >Pareja A</span
+                        >
+                        <div class="space-y-0.5">
+                          <div class="text-xs text-white font-medium truncate">
+                            {{ getPlayerName(match.pA1) }}
+                          </div>
+                          <div class="text-xs text-white font-medium truncate">
+                            {{ getPlayerName(match.pA2) }}
+                          </div>
+                        </div>
+
+                        <!-- Puntuación acotada al mejor de 3 -->
+                        <div
+                          class="flex items-center justify-between pt-2 border-t border-slate-800/50 mt-2"
+                        >
+                          <span class="text-[11px] text-slate-400 font-medium"
+                            >Puntos (Max 2)</span
+                          >
+                          <div class="flex items-center gap-1.5">
+                            <button
+                              @click="adjustScore(index, 'scoreA', -1)"
+                              :disabled="match.finished"
+                              class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm disabled:opacity-30 disabled:pointer-events-none transition-all"
+                            >
+                              -
+                            </button>
+                            <span
+                              class="w-6 text-center text-base font-extrabold text-white"
+                              >{{ match.scoreA }}</span
+                            >
+                            <button
+                              @click="adjustScore(index, 'scoreA', 1)"
+                              :disabled="match.finished || !canIncreaseScore(match, 'scoreA')"
+                              class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm disabled:opacity-30 disabled:pointer-events-none transition-all"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        class="text-center text-xs font-bold text-slate-600 my-1"
+                      >
+                        VS
+                      </div>
+
+                      <!-- Pareja B -->
+                      <div
+                        class="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-2"
+                      >
+                        <span
+                          class="text-[9px] text-slate-500 uppercase tracking-widest block font-bold"
+                          >Pareja B</span
+                        >
+                        <div class="space-y-0.5">
+                          <div class="text-xs text-white font-medium truncate">
+                            {{ getPlayerName(match.pB1) }}
+                          </div>
+                          <div class="text-xs text-white font-medium truncate">
+                            {{ getPlayerName(match.pB2) }}
+                          </div>
+                        </div>
+
+                        <!-- Puntuación acotada al mejor de 3 -->
+                        <div
+                          class="flex items-center justify-between pt-2 border-t border-slate-800/50 mt-2"
+                        >
+                          <span class="text-[11px] text-slate-400 font-medium"
+                            >Puntos (Max 2)</span
+                          >
+                          <div class="flex items-center gap-1.5">
+                            <button
+                              @click="adjustScore(index, 'scoreB', -1)"
+                              :disabled="match.finished"
+                              class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm disabled:opacity-30 disabled:pointer-events-none transition-all"
+                            >
+                              -
+                            </button>
+                            <span
+                              class="w-6 text-center text-base font-extrabold text-white"
+                              >{{ match.scoreB }}</span
+                            >
+                            <button
+                              @click="adjustScore(index, 'scoreB', 1)"
+                              :disabled="match.finished || !canIncreaseScore(match, 'scoreB')"
+                              class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-sm disabled:opacity-30 disabled:pointer-events-none transition-all"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Botón de confirmar resultado del partido -->
+                  <div class="mt-4 pt-3 border-t border-slate-800/50">
+                    <button
+                      v-if="!match.finished"
+                      @click="toggleMatchFinished(index)"
+                      class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-md"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2.5"
+                          d="M5 13l4 4L19 7"
+                        ></path>
+                      </svg>
+                      Confirmar Resultado
+                    </button>
+                    <button
+                      v-else
+                      @click="toggleMatchFinished(index)"
+                      class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 font-semibold py-2 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        ></path>
+                      </svg>
+                      Corregir Resultado
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VISTA: HISTORIAL -->
+        <section v-if="currentTab === 'history'" class="space-y-6">
+          <div
+            class="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-xl"
+          >
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2
+                  class="text-lg font-bold text-white flex items-center gap-2"
+                >
+                  <span class="text-emerald-400">●</span> Historial de Partidas
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">
+                  Torneos guardados y completados en la pista.
+                </p>
+              </div>
+              <button
+                v-if="history.length > 0"
+                @click="confirmClearHistory"
+                class="text-xs text-red-400 hover:text-red-300 font-semibold border border-red-500/20 hover:border-red-500 bg-red-500/5 px-3 py-1.5 rounded-lg transition-all"
+              >
+                Limpiar Historial
+              </button>
+            </div>
+
+            <div
+              v-if="history.length === 0"
+              class="text-center py-16 text-slate-500 border border-dashed border-slate-800 rounded-xl"
+            >
+              <svg
+                class="w-12 h-12 mx-auto text-slate-600 mb-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+              <p class="text-sm font-medium">Historial vacío.</p>
+              <p class="text-xs text-slate-600 mt-1">
+                Completa y finaliza rondas de rotación para ver los reportes
+                aquí.
+              </p>
+            </div>
+
+            <div v-else class="space-y-4">
+              <div
+                v-for="round in history"
+                :key="round.id"
+                class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4"
+              >
+                <!-- Info ronda -->
+                <div
+                  class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-800 pb-3"
+                >
+                  <div>
+                    <h4 class="font-bold text-white text-sm">
+                      Partida de Rotación
+                    </h4>
+                    <span class="text-xs text-slate-400"
+                      >Jugado el {{ formatDate(round.date) }}</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                      @click="copyToClipboard(round)"
+                      class="flex-1 sm:flex-initial bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <svg
+                        class="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8.684 10.742l-1.922-.641A1 1 0 005.5 11v8a1 1 0 001.004 1h10.992a1 1 0 001.004-1v-8a1 1 0 00-1.262-.959l-1.922.641m-5.632 0a2.001 2.001 0 002.508 2.508m-2.508-2.508a2.001 2.001 0 012.508-2.508m0 2.508a2.003 2.003 0 01-2.508-2.508"
+                        ></path>
+                      </svg>
+                      Copiar Resultados
+                    </button>
+                    <button
+                      @click="deleteHistoryItem(round.id)"
+                      class="text-slate-500 hover:text-red-400 p-1.5 bg-slate-950 rounded-lg border border-slate-800 hover:border-slate-700 transition-all"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Resultados -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- Clasificación de la ronda -->
+                  <div
+                    class="bg-slate-950 p-3 rounded-lg border border-slate-800/80 space-y-2"
+                  >
+                    <span
+                      class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block"
+                      >Clasificación Final</span
+                    >
+                    <div class="space-y-1.5">
+                      <div
+                        v-for="(p, idx) in round.leaderboard"
+                        :key="p.id"
+                        class="flex justify-between items-center text-xs"
+                      >
+                        <span class="font-medium text-slate-300">
+                          <span
+                            :class="idx === 0 ? 'text-amber-400 font-bold' : idx === 1 ? 'text-slate-400 font-bold' : idx === 2 ? 'text-amber-600 font-bold' : 'text-slate-600'"
+                            class="mr-1"
+                          >
+                            {{ idx + 1 }}º
+                          </span>
+                          {{ p.name }}
+                        </span>
+                        <span class="text-slate-400">
+                          <strong class="text-white">{{ p.wins }}</strong>
+                          victorias |
+                          <strong class="text-emerald-400"
+                            >{{ p.points }}</strong
+                          >
+                          ptos
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Detalle partidos -->
+                  <div
+                    class="bg-slate-950 p-3 rounded-lg border border-slate-800/80 space-y-2"
+                  >
+                    <span
+                      class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block"
+                      >Resultados Partidos</span
+                    >
+                    <div class="space-y-1 text-xs">
+                      <div
+                        v-for="(m, index) in round.matches"
+                        :key="index"
+                        class="flex justify-between items-center py-1 border-b border-slate-900 last:border-0"
+                      >
+                        <span class="text-slate-500 font-medium"
+                          >Partido {{ index + 1 }}</span
+                        >
+                        <div class="flex items-center gap-2 text-[11px]">
+                          <span
+                            class="text-slate-300 truncate max-w-[70px] text-right"
+                            >{{ getPlayerLastName(m.pA1) }}/{{
+                            getPlayerLastName(m.pA2) }}</span
+                          >
+                          <span
+                            class="bg-slate-900 border border-slate-850 text-emerald-400 px-1.5 py-0.5 rounded font-black"
+                            >{{ m.scoreA }} - {{ m.scoreB }}</span
+                          >
+                          <span
+                            class="text-slate-300 truncate max-w-[70px] text-left"
+                            >{{ getPlayerLastName(m.pB1) }}/{{
+                            getPlayerLastName(m.pB2) }}</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Modales de confirmación personalizados -->
+      <transition name="fade">
+        <div
+          v-if="modal.show"
+          class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+        >
+          <div
+            class="bg-slate-900 border border-slate-800 max-w-md w-full rounded-2xl p-6 shadow-2xl space-y-4"
+          >
+            <div class="flex items-start gap-3">
+              <div
+                class="p-2 bg-yellow-500/10 text-yellow-500 rounded-xl border border-yellow-500/20"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-white">{{ modal.title }}</h3>
+                <p class="text-xs text-slate-400 mt-1">{{ modal.message }}</p>
+              </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-2">
+              <button
+                @click="closeModal"
+                class="bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+              >
+                {{ modal.cancelText || 'Cancelar' }}
+              </button>
+              <button
+                @click="confirmModalAction"
+                class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition-all"
+              >
+                {{ modal.confirmText || 'Confirmar' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </div>
+
+    <!-- Script principal de la Aplicación -->
+    <script>
+      // CONTROL INMEDIATO DE LA PANTALLA DE CARGA SI SE PRODUCE UN ERROR DE RED O COMPATIBILIDAD
+      const safetyTimer = setTimeout(() => {
+        const loader = document.getElementById("loading-fallback");
+        if (loader) {
+          loader.innerHTML = `
+                    <div class="text-center p-6 bg-slate-900 border border-slate-800 max-w-sm mx-4 rounded-2xl shadow-2xl">
+                        <div class="text-red-400 font-extrabold text-base mb-2">Error de Entorno Detectado</div>
+                        <p class="text-slate-400 text-xs mb-4">El navegador tiene bloqueado el almacenamiento de datos locales (localStorage) en los iframes, o el CDN de Vue falló.</p>
+                        <button onclick="window.location.reload()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-all">Reintentar Conexión</button>
+                    </div>
+                `;
+        }
+      }, 4000);
+
+      // CAPA DE PERSISTENCIA COMPLETAMENTE SEGURA Y AISLADA
+      const safeStorage = {
+        getItem(key) {
+          try {
+            return localStorage.getItem(key);
+          } catch (e) {
+            return null;
+          }
+        },
+        setItem(key, value) {
+          try {
+            localStorage.setItem(key, value);
+          } catch (e) {
+            // Ignora silenciosamente para evitar que el script se cuelgue en navegadores bloqueados
+          }
+        },
+        removeItem(key) {
+          try {
+            localStorage.removeItem(key);
+          } catch (e) {
+            // Ignora silenciosamente para evitar que el script se cuelgue en navegadores bloqueados
+          }
+        },
+      };
+
+      window.addEventListener("DOMContentLoaded", () => {
+        const { createApp, ref, computed, onMounted, watch } = Vue;
+
+        createApp({
+          setup() {
+            // Estado Principal de Datos
+            const players = ref([]);
+            const history = ref([]);
+            const activeRound = ref(null);
+
+            // UI y Estado de Navegación
+            const currentTab = ref("ranking");
+            const searchQuery = ref("");
+            const toastMessage = ref("");
+
+            // Formulario nuevo jugador
+            const newPlayer = ref({
+              name: "",
+              hand: "Diestro",
+              customInitials: "",
+              avatar: null,
+            });
+
+            // Variable reactiva para controlar la previsualización en el HTML
+            const avatarPreview = ref(null);
+
+            // Edición de estadísticas manuales
+            const editingPlayerId = ref("");
+            const editingPlayer = ref(null);
+
+            // Selección de jugadores para la ronda
+            const selectedPlayerIds = ref([]);
+
+            const STORAGE_KEYS = {
+              players: "padel_players_v5",
+              history: "padel_history_v5",
+              activeRound: "padel_active_round_v5",
+            };
+
+            // Estructura de Modal Personalizado
+            const modal = ref({
+              show: false,
+              title: "",
+              message: "",
+              confirmText: "",
+              cancelText: "",
+              action: null,
+            });
+
+            // MAPA DE RANGOS Y SUBDIVISIONES (League of Legends)
+            const RANKS_MAPPING = [
+              // Hierro
+              {
+                tier: "Hierro",
+                division: "IV",
+                minXP: 0,
+                maxXP: 19,
+                class: "text-slate-400 bg-slate-950/40 border-slate-850",
+              },
+              {
+                tier: "Hierro",
+                division: "III",
+                minXP: 20,
+                maxXP: 39,
+                class: "text-slate-400 bg-slate-950/40 border-slate-850",
+              },
+              {
+                tier: "Hierro",
+                division: "II",
+                minXP: 40,
+                maxXP: 59,
+                class: "text-slate-400 bg-slate-950/40 border-slate-850",
+              },
+              {
+                tier: "Hierro",
+                division: "I",
+                minXP: 60,
+                maxXP: 79,
+                class: "text-slate-400 bg-slate-950/40 border-slate-850",
+              },
+
+              // Bronce
+              {
+                tier: "Bronce",
+                division: "IV",
+                minXP: 80,
+                maxXP: 109,
+                class: "text-amber-600 bg-amber-950/20 border-amber-900/30",
+              },
+              {
+                tier: "Bronce",
+                division: "III",
+                minXP: 110,
+                maxXP: 139,
+                class: "text-amber-600 bg-amber-950/20 border-amber-900/30",
+              },
+              {
+                tier: "Bronce",
+                division: "II",
+                minXP: 140,
+                maxXP: 169,
+                class: "text-amber-600 bg-amber-950/20 border-amber-900/30",
+              },
+              {
+                tier: "Bronce",
+                division: "I",
+                minXP: 170,
+                maxXP: 199,
+                class: "text-amber-600 bg-amber-950/20 border-amber-900/30",
+              },
+
+              // Plata
+              {
+                tier: "Plata",
+                division: "IV",
+                minXP: 200,
+                maxXP: 249,
+                class: "text-zinc-300 bg-zinc-800/20 border-zinc-700/30",
+              },
+              {
+                tier: "Plata",
+                division: "III",
+                minXP: 250,
+                maxXP: 299,
+                class: "text-zinc-300 bg-zinc-800/20 border-zinc-700/30",
+              },
+              {
+                tier: "Plata",
+                division: "II",
+                minXP: 300,
+                maxXP: 349,
+                class: "text-zinc-300 bg-zinc-800/20 border-zinc-700/30",
+              },
+              {
+                tier: "Plata",
+                division: "I",
+                minXP: 350,
+                maxXP: 399,
+                class: "text-zinc-300 bg-zinc-800/20 border-zinc-700/30",
+              },
+
+              // Oro
+              {
+                tier: "Oro",
+                division: "IV",
+                minXP: 400,
+                maxXP: 474,
+                class: "text-yellow-400 bg-yellow-950/20 border-yellow-800/35",
+              },
+              {
+                tier: "Oro",
+                division: "III",
+                minXP: 475,
+                maxXP: 549,
+                class: "text-yellow-400 bg-yellow-950/20 border-yellow-800/35",
+              },
+              {
+                tier: "Oro",
+                division: "II",
+                minXP: 550,
+                maxXP: 624,
+                class: "text-yellow-400 bg-yellow-950/20 border-yellow-800/35",
+              },
+              {
+                tier: "Oro",
+                division: "I",
+                minXP: 625,
+                maxXP: 699,
+                class: "text-yellow-400 bg-yellow-950/20 border-yellow-800/35",
+              },
+
+              // Platino
+              {
+                tier: "Platino",
+                division: "IV",
+                minXP: 700,
+                maxXP: 799,
+                class: "text-cyan-400 bg-cyan-950/20 border-cyan-800/35",
+              },
+              {
+                tier: "Platino",
+                division: "III",
+                minXP: 800,
+                maxXP: 899,
+                class: "text-cyan-400 bg-cyan-950/20 border-cyan-800/35",
+              },
+              {
+                tier: "Platino",
+                division: "II",
+                minXP: 900,
+                maxXP: 999,
+                class: "text-cyan-400 bg-cyan-950/20 border-cyan-800/35",
+              },
+              {
+                tier: "Platino",
+                division: "I",
+                minXP: 1000,
+                maxXP: 1099,
+                class: "text-cyan-400 bg-cyan-950/20 border-cyan-800/35",
+              },
+
+              // Diamante
+              {
+                tier: "Diamante",
+                division: "IV",
+                minXP: 1100,
+                maxXP: 1224,
+                class: "text-blue-400 bg-blue-950/20 border-blue-800/35",
+              },
+              {
+                tier: "Diamante",
+                division: "III",
+                minXP: 1225,
+                maxXP: 1349,
+                class: "text-blue-400 bg-blue-950/20 border-blue-800/35",
+              },
+              {
+                tier: "Diamante",
+                division: "II",
+                minXP: 1350,
+                maxXP: 1474,
+                class: "text-blue-400 bg-blue-950/20 border-blue-800/35",
+              },
+              {
+                tier: "Diamante",
+                division: "I",
+                minXP: 1475,
+                maxXP: 1599,
+                class: "text-blue-400 bg-blue-950/20 border-blue-800/35",
+              },
+
+              // Maestro, Gran Maestro y Aspirante
+              {
+                tier: "Maestro",
+                division: "",
+                minXP: 1600,
+                maxXP: 2199,
+                class: "text-fuchsia-400 bg-fuchsia-950/20 border-fuchsia-850",
+              },
+              {
+                tier: "Gran Maestro",
+                division: "",
+                minXP: 2200,
+                maxXP: 2999,
+                class: "text-red-400 bg-red-950/20 border-red-850",
+              },
+              {
+                tier: "Aspirante",
+                division: "",
+                minXP: 3000,
+                maxXP: Infinity,
+                class:
+                  "text-amber-300 bg-amber-500/10 border-amber-400 animate-pulse",
+              },
+            ];
+
+            // --- CARGA / PERSISTENCIA ---
+            onMounted(() => {
+              // Ocultamos la pantalla de carga nativa y cancelamos el temporizador de error
+              clearTimeout(safetyTimer);
+              const loader = document.getElementById("loading-fallback");
+              if (loader) loader.remove();
+
+              [
+                "padel_players_v4",
+                "padel_history_v4",
+                "padel_active_round_v4",
+              ].forEach((key) => {
+                safeStorage.removeItem(key);
+              });
+
+              // Carga de jugadores
+              const savedPlayers = safeStorage.getItem(STORAGE_KEYS.players);
+              if (savedPlayers) {
+                try {
+                  players.value = JSON.parse(savedPlayers);
+                } catch (e) {
+                  players.value = getDefaultPlayers();
+                }
+              } else {
+                players.value = getDefaultPlayers();
+                savePlayers();
+              }
+
+              // Carga de historial
+              const savedHistory = safeStorage.getItem(STORAGE_KEYS.history);
+              if (savedHistory) {
+                try {
+                  history.value = JSON.parse(savedHistory);
+                } catch (e) {
+                  history.value = [];
+                }
+              }
+
+              // Carga de ronda activa
+              const savedActiveRound = safeStorage.getItem(
+                STORAGE_KEYS.activeRound,
+              );
+              if (savedActiveRound) {
+                try {
+                  activeRound.value = JSON.parse(savedActiveRound);
+                } catch (e) {
+                  activeRound.value = null;
+                }
+              }
+            });
+
+            const getDefaultPlayers = () => [];
+
+            const savePlayers = () =>
+              safeStorage.setItem(
+                STORAGE_KEYS.players,
+                JSON.stringify(players.value),
+              );
+            const saveHistory = () =>
+              safeStorage.setItem(
+                STORAGE_KEYS.history,
+                JSON.stringify(history.value),
+              );
+            const saveActiveRound = () =>
+              safeStorage.setItem(
+                STORAGE_KEYS.activeRound,
+                JSON.stringify(activeRound.value),
+              );
+
+            watch(players, savePlayers, { deep: true });
+            watch(history, saveHistory, { deep: true });
+            watch(activeRound, saveActiveRound, { deep: true });
+
+            // --- MÉTODOS DEL CÁLCULO COMPETITIVO DE LP ---
+            const calculateXP = (player) => {
+              if (!player || !player.stats) return 0;
+              const wins = player.stats.wins || 0;
+              const points = player.stats.points || 0;
+              return wins * 15 + points * 2;
+            };
+
+            const getPlayerCategory = (player) => {
+              const xp = calculateXP(player);
+              return (
+                RANKS_MAPPING.find((r) => xp >= r.minXP && xp <= r.maxXP) ||
+                RANKS_MAPPING[0]
+              );
+            };
+
+            const getPlayerBadgeClass = (player) => {
+              return getPlayerCategory(player).class;
+            };
+
+            const getNextCategoryName = (player) => {
+              const xp = calculateXP(player);
+              const currentIdx = RANKS_MAPPING.findIndex(
+                (r) => xp >= r.minXP && xp <= r.maxXP,
+              );
+              if (currentIdx !== -1 && currentIdx < RANKS_MAPPING.length - 1) {
+                const next = RANKS_MAPPING[currentIdx + 1];
+                return `${next.tier} ${next.division}`;
+              }
+              return null;
+            };
+
+            const getNextCategoryMinXP = (player) => {
+              const xp = calculateXP(player);
+              const currentIdx = RANKS_MAPPING.findIndex(
+                (r) => xp >= r.minXP && xp <= r.maxXP,
+              );
+              if (currentIdx !== -1 && currentIdx < RANKS_MAPPING.length - 1) {
+                return RANKS_MAPPING[currentIdx + 1].minXP;
+              }
+              return null;
+            };
+
+            const getXPPercentToNextLevel = (player) => {
+              const xp = calculateXP(player);
+              const cat = getPlayerCategory(player);
+              if (cat.maxXP === Infinity) return 100;
+              const range = cat.maxXP - cat.minXP + 1;
+              const progress = xp - cat.minXP;
+              return Math.min(
+                100,
+                Math.max(0, Math.round((progress / range) * 100)),
+              );
+            };
+
+            // --- MÉTODOS DE FILTRADO Y ORDENACIÓN ---
+            const sortedPlayersByRank = computed(() => {
+              const query = searchQuery.value.toLowerCase();
+              const filtered = players.value.filter(
+                (p) => p.name && p.name.toLowerCase().includes(query),
+              );
+              return filtered.sort((a, b) => {
+                const xpA = calculateXP(a);
+                const xpB = calculateXP(b);
+                if (xpB !== xpA) return xpB - xpA;
+                return (b.stats.wins || 0) - (a.stats.wins || 0);
+              });
+            });
+
+            const filteredPlayers = computed(() => {
+              if (!searchQuery.value) return players.value;
+              const query = searchQuery.value.toLowerCase();
+              return players.value.filter(
+                (p) => p.name && p.name.toLowerCase().includes(query),
+              );
+            });
+
+            const createPlayer = () => {
+              if (!newPlayer.value.name.trim()) return;
+              const id = "player_" + Date.now();
+
+              // Guardamos el jugador en tu lista con sus nuevas propiedades
+              players.value.push({
+                id,
+                name: newPlayer.value.name.trim(),
+                hand: newPlayer.value.hand,
+                // Pasamos el avatar y las iniciales personalizadas (limpias de espacios)
+                avatar: avatarPreview.value, // Guardamos la imagen (puedes guardar el file o la preview según tu persistencia)
+                customInitials:
+                  newPlayer.value.customInitials.trim().toUpperCase() || null,
+                stats: { wins: 0, losses: 0, points: 0, roundsPlayed: 0 },
+              });
+
+              // Limpiamos todo el formulario para el siguiente registro
+              newPlayer.value.name = "";
+              newPlayer.value.hand = "Diestro";
+              newPlayer.value.customInitials = "";
+              newPlayer.value.avatar = null;
+              avatarPreview.value = null; // Resetea la previsualización del círculo
+              if (fileInput.value) {
+                fileInput.value.value = null;
+              }
+
+              showToast("Jugador registrado en la base de datos.");
+            };
+
+            const deletePlayer = (id) => {
+              modal.value = {
+                show: true,
+                title: "¿Retirar jugador?",
+                message:
+                  "Esta acción es irreversible y borrará permanentemente todo su historial de rankeds, victorias y puntos de liga (LP) acumulados.",
+                confirmText: "Sí, retirar",
+                cancelText: "Cancelar",
+                action: () => {
+                  players.value = players.value.filter((p) => p.id !== id);
+                  selectedPlayerIds.value = selectedPlayerIds.value.filter(
+                    (pId) => pId !== id,
+                  );
+                  if (editingPlayerId.value === id) {
+                    editingPlayerId.value = "";
+                    editingPlayer.value = null;
+                  }
+                  showToast("Jugador retirado del servidor.");
+                },
+              };
+            };
+
+            const loadPlayerForEditing = () => {
+              const original = players.value.find(
+                (p) => p.id === editingPlayerId.value,
+              );
+              if (original) {
+                editingPlayer.value = JSON.parse(JSON.stringify(original));
+              }
+            };
+
+            const saveManualPlayerStats = () => {
+              if (!editingPlayer.value) return;
+              const idx = players.value.findIndex(
+                (p) => p.id === editingPlayer.value.id,
+              );
+              if (idx !== -1) {
+                players.value[idx].stats = { ...editingPlayer.value.stats };
+                showToast(
+                  `Estadísticas de ${editingPlayer.value.name} actualizadas correctamente.`,
+                );
+                editingPlayerId.value = "";
+                editingPlayer.value = null;
+              }
+            };
+
+            const togglePlayerSelection = (id) => {
+              const idx = selectedPlayerIds.value.indexOf(id);
+              if (idx > -1) {
+                selectedPlayerIds.value.splice(idx, 1);
+              } else {
+                if (selectedPlayerIds.value.length >= 6) {
+                  showToast(
+                    "La rotación americana permite seleccionar 4 o 6 jugadores.",
+                  );
+                  return;
+                }
+                selectedPlayerIds.value.push(id);
+              }
+            };
+
+            const getPlayerName = (id) => {
+              if (!id) return "Jugador";
+              const p = players.value.find((p) => p.id === id);
+              return p ? p.name : "Jugador";
+            };
+
+            const getPlayerLastName = (id) => {
+              const name = getPlayerName(id);
+              const parts = name.split(" ");
+              return parts.length > 1 ? parts[parts.length - 1] : name;
+            };
+
+            const getInitials = (name) => {
+              if (!name) return "IN";
+              return name
+                .split(" ")
+                .filter((n) => n.length > 0)
+                .map((n) => n[0])
+                .join("")
+                .substring(0, 2)
+                .toUpperCase();
+            };
+
+            // 1. Declaramos la referencia del input para que el script la reconozca
+            const fileInput = ref(null);
+
+            // 2. Función que se ejecuta al pulsar el círculo y que fuerza la apertura de la galería/cámara
+            const triggerFileInput = () => {
+              if (fileInput.value) {
+                fileInput.value.click();
+              }
+            };
+
+            const handleAvatarChange = (event) => {
+              const file = event.target?.files?.[0];
+              if (!file) {
+                if (event.target) event.target.value = null;
+                return;
+              }
+
+              const reader = new FileReader();
+
+              reader.onload = (e) => {
+                avatarPreview.value = e.target.result;
+                newPlayer.value.avatar = e.target.result;
+              };
+
+              reader.onloadend = () => {
+                if (event.target) event.target.value = null;
+              };
+
+              reader.onerror = () => {
+                showToast("Error al leer la imagen. Intenta con otro archivo.");
+              };
+
+              reader.readAsDataURL(file);
+            };
+
+            const removeAvatar = () => {
+              newPlayer.value.avatar = null;
+              avatarPreview.value = null;
+              if (fileInput.value) {
+                fileInput.value.value = null;
+              }
+            };
+
+            const getWinRate = (player) => {
+              if (!player || !player.stats) return 0;
+              const total =
+                (player.stats.wins || 0) + (player.stats.losses || 0);
+              if (total === 0) return 0;
+              return Math.round((player.stats.wins / total) * 100);
+            };
+
+            const isValidPlayerCount = (count) => count === 4 || count === 6;
+
+            const createMatch = (ids, pA1, pA2, pB1, pB2, resting = []) => ({
+              pA1: ids[pA1],
+              pA2: ids[pA2],
+              pB1: ids[pB1],
+              pB2: ids[pB2],
+              resting: resting.map((idx) => ids[idx]),
+              scoreA: 0,
+              scoreB: 0,
+              finished: false,
+            });
+
+            const buildRotationMatches = (ids) => {
+              if (ids.length === 4) {
+                return [
+                  createMatch(ids, 0, 1, 2, 3),
+                  createMatch(ids, 0, 2, 1, 3),
+                  createMatch(ids, 0, 3, 1, 2),
+                ];
+              }
+
+              if (ids.length === 6) {
+                return [
+                  createMatch(ids, 0, 1, 2, 3, [4, 5]),
+                  createMatch(ids, 0, 5, 4, 3, [1, 2]),
+                  createMatch(ids, 1, 5, 4, 2, [0, 3]),
+                  createMatch(ids, 1, 3, 2, 0, [4, 5]),
+                  createMatch(ids, 3, 5, 0, 4, [1, 2]),
+                  createMatch(ids, 1, 4, 2, 5, [0, 3]),
+                  createMatch(ids, 0, 3, 1, 2, [4, 5]),
+                  createMatch(ids, 4, 5, 0, 3, [1, 2]),
+                  createMatch(ids, 4, 5, 1, 2, [0, 3]),
+                ];
+              }
+
+              return [];
+            };
+
+            const previewMatches = computed(() =>
+              buildRotationMatches(selectedPlayerIds.value),
+            );
+
+            const isValidSelection = computed(() =>
+              isValidPlayerCount(selectedPlayerIds.value.length),
+            );
+
+            const rotationSummaryText = computed(() => {
+              if (selectedPlayerIds.value.length === 6) {
+                return "Cada jugador disputa 6 partidos, descansa 3 turnos y juega con todos como compañero; solo 3 parejas se repiten para cuadrar la rotación.";
+              }
+              return "Cada jugador jugará con cada uno de los otros 3 como compañero.";
+            });
+
+            const formatPlayerList = (ids) =>
+              ids.map(getPlayerLastName).join(" / ");
+
+            // --- SISTEMA DE JUEGO (AL MEJOR DE 3 PUNTOS) ---
+            const startRound = () => {
+              if (!isValidPlayerCount(selectedPlayerIds.value.length)) {
+                showToast(
+                  "Debes seleccionar exactamente 4 o 6 jugadores para jugar la partida.",
+                );
+                return;
+              }
+              if (activeRound.value) {
+                modal.value = {
+                  show: true,
+                  title: "Partida en juego detectada",
+                  message:
+                    "¿Deseas cancelar el enfrentamiento en pista activa y arrancar una nueva rotación?",
+                  confirmText: "Sí, reiniciar",
+                  cancelText: "Volver a pista",
+                  action: () => {
+                    initNewRound();
+                  },
+                };
+              } else {
+                initNewRound();
+              }
+            };
+
+            const initNewRound = () => {
+              const ids = [...selectedPlayerIds.value];
+              const generatedMatches = buildRotationMatches(ids);
+              activeRound.value = {
+                id: "round_" + Date.now(),
+                date: new Date().toISOString(),
+                players: [...ids],
+                matches: generatedMatches,
+                finished: false,
+              };
+              currentTab.value = "active-round";
+              showToast(
+                "¡Fase de rotación iniciada! Los marcadores están limitados al mejor de 3.",
+              );
+            };
+
+            const canIncreaseScore = (match, teamKey) => {
+              if (!match) return false;
+              const scA = match.scoreA || 0;
+              const scB = match.scoreB || 0;
+              return scA < 2 && scB < 2;
+            };
+
+            const adjustScore = (matchIdx, teamKey, amount) => {
+              if (!activeRound.value) return;
+              const match = activeRound.value.matches[matchIdx];
+              if (!match || match.finished) return;
+
+              if (amount > 0) {
+                if (canIncreaseScore(match, teamKey)) {
+                  match[teamKey] += 1;
+                } else {
+                  showToast("Fin del partido alcanzado (Mejor de 3 puntos).");
+                }
+              } else {
+                match[teamKey] = Math.max(0, match[teamKey] + amount);
+              }
+            };
+
+            const toggleMatchFinished = (matchIdx) => {
+              if (!activeRound.value) return;
+              const match = activeRound.value.matches[matchIdx];
+              if (!match) return;
+
+              if (!match.finished) {
+                const totalPoints = (match.scoreA || 0) + (match.scoreB || 0);
+                const hasWinner = match.scoreA === 2 || match.scoreB === 2;
+                if (totalPoints === 0) {
+                  showToast(
+                    "Debes marcar el resultado de la partida antes de confirmar.",
+                  );
+                  return;
+                }
+                if (!hasWinner) {
+                  showToast(
+                    "Un equipo debe alcanzar obligatoriamente los 2 puntos para ganar (Mejor de 3 sets).",
+                  );
+                  return;
+                }
+              }
+              match.finished = !match.finished;
+              showToast(
+                match.finished
+                  ? `Enfrentamiento ${matchIdx + 1} confirmado.`
+                  : `Enfrentamiento ${matchIdx + 1} reabierto.`,
+              );
+            };
+
+            const confirmCancelRound = () => {
+              modal.value = {
+                show: true,
+                title: "¿Deseas cancelar la partida?",
+                message:
+                  "Se borrarán los marcadores y el progreso de los partidos activos de la pista.",
+                confirmText: "Sí, cancelar ronda",
+                cancelText: "Seguir jugando",
+                action: () => {
+                  activeRound.value = null;
+                  showToast("Partida cancelada.");
+                  currentTab.value = "new-round";
+                },
+              };
+            };
+
+            const completedMatchesCount = computed(() => {
+              if (!activeRound.value) return 0;
+              return activeRound.value.matches.filter((m) => m.finished).length;
+            });
+
+            const roundProgress = computed(() => {
+              if (!activeRound.value) return 0;
+              const totalMatches = activeRound.value.matches.length || 1;
+              return Math.round(
+                (completedMatchesCount.value / totalMatches) * 100,
+              );
+            });
+
+            // CLASIFICACIÓN PROVISIONAL DE LA RONDA ACTIVA
+            const activeRoundLeaderboard = computed(() => {
+              if (!activeRound.value) return [];
+              const statsMap = {};
+              activeRound.value.players.forEach((pId) => {
+                statsMap[pId] = {
+                  id: pId,
+                  name: getPlayerName(pId),
+                  played: 0,
+                  wins: 0,
+                  losses: 0,
+                  points: 0,
+                };
+              });
+
+              activeRound.value.matches.forEach((m) => {
+                if (!m.finished) return;
+                [m.pA1, m.pA2, m.pB1, m.pB2].forEach((id) => {
+                  if (statsMap[id]) statsMap[id].played++;
+                });
+                if (statsMap[m.pA1]) statsMap[m.pA1].points += m.scoreA;
+                if (statsMap[m.pA2]) statsMap[m.pA2].points += m.scoreA;
+                if (statsMap[m.pB1]) statsMap[m.pB1].points += m.scoreB;
+                if (statsMap[m.pB2]) statsMap[m.pB2].points += m.scoreB;
+
+                if (m.scoreA > m.scoreB) {
+                  if (statsMap[m.pA1]) statsMap[m.pA1].wins++;
+                  if (statsMap[m.pA2]) statsMap[m.pA2].wins++;
+                  if (statsMap[m.pB1]) statsMap[m.pB1].losses++;
+                  if (statsMap[m.pB2]) statsMap[m.pB2].losses++;
+                } else {
+                  if (statsMap[m.pB1]) statsMap[m.pB1].wins++;
+                  if (statsMap[m.pB2]) statsMap[m.pB2].wins++;
+                  if (statsMap[m.pA1]) statsMap[m.pA1].losses++;
+                  if (statsMap[m.pA2]) statsMap[m.pA2].losses++;
+                }
+              });
+
+              return Object.values(statsMap).sort((a, b) => {
+                if (b.wins !== a.wins) return b.wins - a.wins;
+                return b.points - a.points;
+              });
+            });
+
+            // Cierre y actualización en lote de la XP (LP) de la Liga
+            const finishRound = () => {
+              if (!activeRound.value) return;
+              const finalLeaderboard = [...activeRoundLeaderboard.value];
+              const completedRound = {
+                ...activeRound.value,
+                finished: true,
+                leaderboard: finalLeaderboard,
+              };
+              history.value.unshift(completedRound);
+
+              // APLICAR LP GLOBALES (1 Victoria = 15 LP, 1 Punto = 2 LP)
+              finalLeaderboard.forEach((roundPlayer) => {
+                const globalPlayer = players.value.find(
+                  (p) => p.id === roundPlayer.id,
+                );
+                if (globalPlayer) {
+                  globalPlayer.stats.wins += roundPlayer.wins;
+                  globalPlayer.stats.losses += roundPlayer.losses;
+                  globalPlayer.stats.points += roundPlayer.points;
+                  globalPlayer.stats.roundsPlayed =
+                    (globalPlayer.stats.roundsPlayed || 0) + 1;
+                }
+              });
+
+              activeRound.value = null;
+              selectedPlayerIds.value = [];
+              currentTab.value = "ranking";
+              showToast("🏆 Resultados de la rotación procesados.");
+            };
+
+            // --- HISTORIAL ---
+            const deleteHistoryItem = (id) => {
+              modal.value = {
+                show: true,
+                title: "Eliminar del Historial",
+                message:
+                  "¿Estás seguro de que quieres eliminar este registro? No afectará a las estadísticas acumuladas en el ranking general.",
+                confirmText: "Sí, eliminar",
+                cancelText: "Cancelar",
+                action: () => {
+                  history.value = history.value.filter((h) => h.id !== id);
+                  showToast("Registro eliminado del historial.");
+                },
+              };
+            };
+
+            const confirmClearHistory = () => {
+              modal.value = {
+                show: true,
+                title: "Vaciar Historial",
+                message:
+                  "¿Estás seguro de que deseas borrar de forma definitiva todos los torneos guardados?",
+                confirmText: "Sí, borrar historial",
+                cancelText: "Cancelar",
+                action: () => {
+                  history.value = [];
+                  showToast("Historial borrado.");
+                },
+              };
+            };
+
+            const copyToClipboard = (round) => {
+              const dateStr = formatDate(round.date);
+              let text = `🎾 *AMERICANO DE PÁDEL* 🎾\n📅 Fecha: ${dateStr}\n`;
+              text += `🏆 *Pádel League Rankeds SoloQ*\n\n`;
+              text += `📊 *RESULTADO DE LA RONDA:*\n`;
+              round.leaderboard.forEach((p, idx) => {
+                const globalPlayer = players.value.find(
+                  (player) => player.id === p.id,
+                );
+                const lolRank = getPlayerCategory(globalPlayer);
+                text += `${idx + 1}º - *${p.name}*: ${p.wins} Victorias (V) | *${p.points}* Puntos (P) -> _${lolRank.tier} ${lolRank.division}_\n`;
+              });
+              text += `\n🎯 *MARCADORES DE LA ROTACIÓN:*\n`;
+              round.matches.forEach((m, idx) => {
+                const pA1 = getPlayerLastName(m.pA1);
+                const pA2 = getPlayerLastName(m.pA2);
+                const pB1 = getPlayerLastName(m.pB1);
+                const pB2 = getPlayerLastName(m.pB2);
+                const restingText =
+                  m.resting && m.resting.length
+                    ? ` | Descansan: ${formatPlayerList(m.resting)}`
+                    : "";
+                text += `Partido ${idx + 1}: [${pA1}/${pA2}]  *${m.scoreA} - ${m.scoreB}* [${pB1}/${pB2}]${restingText}\n`;
+              });
+              text += `\n¡Sigue subiendo en la clasificación! 🚀`;
+
+              const textarea = document.createElement("textarea");
+              textarea.value = text;
+              textarea.style.position = "fixed";
+              document.body.appendChild(textarea);
+              textarea.select();
+              try {
+                document.execCommand("copy");
+                showToast("📝 ¡Formato para WhatsApp copiado!");
+              } catch (err) {
+                showToast("Error de copia.");
+              }
+              document.body.removeChild(textarea);
+            };
+
+            // --- UTILIDADES ---
+            const showToast = (msg) => {
+              toastMessage.value = msg;
+              setTimeout(() => {
+                if (toastMessage.value === msg) toastMessage.value = "";
+              }, 4000);
+            };
+
+            const formatDate = (isoString) => {
+              const date = new Date(isoString);
+              return date.toLocaleDateString("es-ES", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            };
+
+            const confirmModalAction = () => {
+              if (modal.value.action) modal.value.action();
+              closeModal();
+            };
+
+            const closeModal = () => {
+              modal.value.show = false;
+              modal.value.action = null;
+            };
+
+            return {
+              players,
+              history,
+              activeRound,
+              currentTab,
+              searchQuery,
+              newPlayer,
+              selectedPlayerIds,
+              toastMessage,
+              modal,
+              editingPlayerId,
+              editingPlayer,
+              filteredPlayers,
+              completedMatchesCount,
+              roundProgress,
+              activeRoundLeaderboard,
+              sortedPlayersByRank,
+              isValidSelection,
+              previewMatches,
+              rotationSummaryText,
+              calculateXP,
+              getPlayerCategory,
+              getPlayerBadgeClass,
+              getNextCategoryName,
+              getNextCategoryMinXP,
+              getXPPercentToNextLevel,
+              createPlayer,
+              deletePlayer,
+              togglePlayerSelection,
+              getPlayerName,
+              getPlayerLastName,
+              getInitials,
+              getWinRate,
+              loadPlayerForEditing,
+              saveManualPlayerStats,
+              startRound,
+              adjustScore,
+              toggleMatchFinished,
+              confirmCancelRound,
+              finishRound,
+              canIncreaseScore,
+              deleteHistoryItem,
+              confirmClearHistory,
+              copyToClipboard,
+              formatDate,
+              formatPlayerList,
+              closeModal,
+              avatarPreview,
+              handleAvatarChange,
+              removeAvatar,
+              confirmModalAction,
+              fileInput,
+              triggerFileInput,
+            };
+          },
+        }).mount("#app");
+      });
+    </script>
+  </body>
+</html>
