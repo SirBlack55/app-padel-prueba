@@ -53,9 +53,7 @@
       <div
         class="animate-spin rounded-full h-12 w-12 border-t-2 border-emerald-500 mb-4"
       ></div>
-      <p class="text-slate-400 text-sm font-medium">
-        Iniciando Pádel League...
-      </p>
+      <p class="text-slate-400 text-sm font-medium">Iniciando PÁDELPRO...</p>
     </div>
 
     <!-- APP PRINCIPAL VUE -->
@@ -242,8 +240,8 @@
                   Tabla de Clasificación
                 </h3>
                 <p class="text-xs text-slate-400 mt-1">
-                  Suma de Victorias (+15 LP) y Puntos de Pista (+2 LP)
-                  conseguidos.
+                  Suma de Victorias (+15 LP), Puntos de Pista (+2 LP) y penaliza
+                  derrotas (-5 LP).
                 </p>
               </div>
               <!-- Filtro de jugadores -->
@@ -327,11 +325,7 @@
                           getPlayerCategory(player).division }}
                         </span>
                       </div>
-                      <div
-                        class="text-[10px] text-slate-400 mt-1 flex items-center gap-2"
-                      >
-                        <span>Mano: <strong>{{ player.hand }}</strong></span>
-                        <span>•</span>
+                      <div class="text-[10px] text-slate-400 mt-1">
                         <span class="text-emerald-400 font-bold"
                           >Porcentaje de victoria: {{ getWinRate(player)
                           }}%</span
@@ -447,6 +441,7 @@
             </h2>
 
             <form @submit.prevent="createPlayer" class="flex flex-col gap-6">
+              <!-- SECCIÓN DE AVATAR (Foto e Iniciales) -->
               <div
                 class="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/50 p-4 rounded-2xl border border-slate-800/60"
               >
@@ -537,7 +532,9 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- DATOS DE JUEGO (Alineados perfectamente en 3 columnas) -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <!-- Input Nombre -->
                 <div>
                   <label
                     class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2"
@@ -552,21 +549,8 @@
                   />
                 </div>
 
+                <!-- Botón Agregar Jugador -->
                 <div>
-                  <label
-                    class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2"
-                    >Mano de juego</label
-                  >
-                  <select
-                    v-model="newPlayer.hand"
-                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
-                  >
-                    <option value="Diestro">Diestro</option>
-                    <option value="Zurdo">Zurdo</option>
-                  </select>
-                </div>
-
-                <div class="flex items-end">
                   <button
                     type="submit"
                     class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-emerald-500/20"
@@ -713,11 +697,6 @@
                     >
                       {{ player.name }}
                     </h3>
-                    <span
-                      class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50"
-                    >
-                      {{ player.hand }}
-                    </span>
                   </div>
                 </div>
 
@@ -969,8 +948,15 @@
                 <li>
                   Ascenso Divisional (LP):
                   <strong class="text-emerald-400"
-                    >Cada victoria otorga 15 LP. Cada punto de pista otorga 2
-                    LP.</strong
+                    >Cada victoria otorga 15 LP, cada punto de pista otorga 2 LP
+                    y cada derrota resta 5 LP.</strong
+                  >
+                </li>
+                <li>
+                  Bonus de nivel:
+                  <strong class="text-emerald-400"
+                    >Si un jugador de menor nivel vence a uno superior, gana LP
+                    extra; el favorito pierde más.</strong
                   >
                 </li>
               </ul>
@@ -1668,7 +1654,6 @@
             // Formulario nuevo jugador
             const newPlayer = ref({
               name: "",
-              hand: "Diestro",
               customInitials: "",
               avatar: null,
             });
@@ -1984,7 +1969,24 @@
               if (!player || !player.stats) return 0;
               const wins = player.stats.wins || 0;
               const points = player.stats.points || 0;
-              return wins * 15 + points * 2;
+              const losses = player.stats.losses || 0;
+              const bonusLP = player.stats.bonusLP || 0;
+              return wins * 15 + points * 2 - losses * 5 + bonusLP;
+            };
+
+            const getTeamStrength = (playerIds) => {
+              if (!playerIds || playerIds.length === 0) return 0;
+              const total = playerIds.reduce((sum, id) => {
+                const player = players.value.find((p) => p.id === id);
+                return sum + (player ? calculateXP(player) : 0);
+              }, 0);
+              return total / playerIds.length;
+            };
+
+            const getLPGainMultiplier = (winnerStrength, loserStrength) => {
+              const difference = loserStrength - winnerStrength;
+              if (difference <= 0) return 1;
+              return 1 + Math.min(difference / 600, 0.5);
             };
 
             const getPlayerCategory = (player) => {
@@ -2064,17 +2066,21 @@
               players.value.push({
                 id,
                 name: newPlayer.value.name.trim(),
-                hand: newPlayer.value.hand,
                 // Pasamos el avatar y las iniciales personalizadas (limpias de espacios)
                 avatar: avatarPreview.value, // Guardamos la imagen (puedes guardar el file o la preview según tu persistencia)
                 customInitials:
                   newPlayer.value.customInitials.trim().toUpperCase() || null,
-                stats: { wins: 0, losses: 0, points: 0, roundsPlayed: 0 },
+                stats: {
+                  wins: 0,
+                  losses: 0,
+                  points: 0,
+                  roundsPlayed: 0,
+                  bonusLP: 0,
+                },
               });
 
               // Limpiamos todo el formulario para el siguiente registro
               newPlayer.value.name = "";
-              newPlayer.value.hand = "Diestro";
               newPlayer.value.customInitials = "";
               newPlayer.value.avatar = null;
               avatarPreview.value = null; // Resetea la previsualización del círculo
@@ -2122,7 +2128,11 @@
                 (p) => p.id === editingPlayer.value.id,
               );
               if (idx !== -1) {
-                players.value[idx].stats = { ...editingPlayer.value.stats };
+                const currentBonus = players.value[idx].stats?.bonusLP || 0;
+                players.value[idx].stats = {
+                  ...editingPlayer.value.stats,
+                  bonusLP: currentBonus,
+                };
                 showToast(
                   `Estadísticas de ${editingPlayer.value.name} actualizadas correctamente.`,
                 );
@@ -2466,6 +2476,40 @@
                   globalPlayer.stats.roundsPlayed =
                     (globalPlayer.stats.roundsPlayed || 0) + 1;
                 }
+              });
+
+              const bonusData = activeRound.value.matches
+                .filter((m) => m.finished)
+                .map((m) => {
+                  const winnerTeam =
+                    m.scoreA > m.scoreB ? [m.pA1, m.pA2] : [m.pB1, m.pB2];
+                  const loserTeam =
+                    m.scoreA > m.scoreB ? [m.pB1, m.pB2] : [m.pA1, m.pA2];
+                  const winnerStrength = getTeamStrength(winnerTeam);
+                  const loserStrength = getTeamStrength(loserTeam);
+                  const multiplier = getLPGainMultiplier(
+                    winnerStrength,
+                    loserStrength,
+                  );
+                  const bonus = Math.round(15 * (multiplier - 1));
+                  const penalty = Math.round(5 * (multiplier - 1));
+                  return { winnerTeam, loserTeam, bonus, penalty };
+                });
+
+              bonusData.forEach(({ winnerTeam, loserTeam, bonus, penalty }) => {
+                winnerTeam.forEach((playerId) => {
+                  const player = players.value.find((p) => p.id === playerId);
+                  if (player) {
+                    player.stats.bonusLP = (player.stats.bonusLP || 0) + bonus;
+                  }
+                });
+                loserTeam.forEach((playerId) => {
+                  const player = players.value.find((p) => p.id === playerId);
+                  if (player) {
+                    player.stats.bonusLP =
+                      (player.stats.bonusLP || 0) - penalty;
+                  }
+                });
               });
 
               activeRound.value = null;
