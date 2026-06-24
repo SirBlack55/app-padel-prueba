@@ -2,7 +2,8 @@
 <html lang="es" class="h-full bg-slate-900 text-slate-100">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f172a" />
     <title>PÁDELPRO</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,8 +17,72 @@
     <!-- Vue.js 3 CDN (jsDelivr - El CDN más rápido y estable del mundo) -->
     <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
     <style>
+      html {
+        min-height: calc(var(--vh, 1vh) * 100);
+        width: 100%;
+      }
+
       body {
         font-family: "Inter", sans-serif;
+        min-height: calc(var(--vh, 1vh) * 100);
+        height: 100%;
+        margin: 0;
+        overflow-x: hidden;
+        overflow-y: hidden;
+        -webkit-text-size-adjust: 100%;
+        overscroll-behavior-y: contain;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        min-width: 0;
+      }
+
+      html,
+      body,
+      #app {
+        max-width: 100vw;
+        min-height: 100%;
+        overflow-x: hidden;
+      }
+
+      #app {
+        overflow: hidden;
+      }
+
+      main {
+        max-width: 100vw;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+
+      img,
+      svg {
+        max-width: 100%;
+        height: auto;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        max-width: 100%;
+      }
+
+      nav button,
+      .grid > * {
+        min-width: 0;
+      }
+
+      input,
+      button,
+      select,
+      textarea {
+        font: inherit;
       }
 
       [v-cloak] {
@@ -63,7 +128,7 @@
         class="bg-slate-950 border-b border-slate-800 sticky top-0 z-40 shadow-lg"
       >
         <div
-          class="max-w-4xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4"
+          class="max-w-full mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4"
         >
           <div class="flex items-center gap-3">
             <div
@@ -96,35 +161,39 @@
 
           <!-- Menú Navegación -->
           <nav
-            class="flex space-x-1 bg-slate-900 p-1 rounded-xl border border-slate-800 w-full md:w-auto overflow-x-auto"
+            class="hidden sm:flex flex-wrap gap-2 bg-slate-950/95 backdrop-blur-sm p-1.5 rounded-3xl border border-slate-800 shadow-inner shadow-slate-950/40 w-full md:w-auto overflow-x-auto"
           >
             <button
               @click="currentTab = 'ranking'"
-              :class="currentTab === 'ranking' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
-              class="flex-1 md:flex-initial px-3.5 py-2 text-xs rounded-lg transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-1"
+              :class="currentTab === 'ranking' ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'"
+              class="flex-1 md:flex-initial min-w-[8rem] px-3.5 py-2 text-xs rounded-2xl transition-all duration-200 whitespace-normal flex items-center justify-center gap-2"
             >
-              <span>🏆</span> Clasificación
+              <span>🏆</span>
+              <span>Clasificación</span>
             </button>
             <button
               @click="currentTab = 'players'"
-              :class="currentTab === 'players' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
-              class="flex-1 md:flex-initial px-3.5 py-2 text-xs rounded-lg transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-1"
+              :class="currentTab === 'players' ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'"
+              class="flex-1 md:flex-initial min-w-[8rem] px-3.5 py-2 text-xs rounded-2xl transition-all duration-200 whitespace-normal flex items-center justify-center gap-2"
             >
-              <span>👥</span> Jugadores
+              <span>👥</span>
+              <span>Jugadores</span>
             </button>
             <button
               @click="currentTab = 'new-round'"
-              :class="currentTab === 'new-round' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
-              class="flex-1 md:flex-initial px-3.5 py-2 text-xs rounded-lg transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-1"
+              :class="currentTab === 'new-round' ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'"
+              class="flex-1 md:flex-initial min-w-[8rem] px-3.5 py-2 text-xs rounded-2xl transition-all duration-200 whitespace-normal flex items-center justify-center gap-2"
             >
-              <span>🎾</span> Jugar
+              <span>🎾</span>
+              <span>Jugar</span>
             </button>
             <button
               @click="currentTab = 'active-round'"
-              :class="currentTab === 'active-round' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
-              class="flex-1 md:flex-initial px-3.5 py-2 text-xs rounded-lg transition-all duration-200 relative whitespace-nowrap flex items-center justify-center gap-1"
+              :class="currentTab === 'active-round' ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'"
+              class="flex-1 md:flex-initial min-w-[8rem] px-3.5 py-2 text-xs rounded-2xl transition-all duration-200 relative whitespace-normal flex items-center justify-center gap-2"
             >
-              <span>⚔️</span> Pista Activa
+              <span>⚔️</span>
+              <span>Pista Activa</span>
               <span
                 v-if="activeRound"
                 class="absolute -top-1 -right-1 flex h-3 w-3"
@@ -139,22 +208,23 @@
             </button>
             <button
               @click="currentTab = 'history'"
-              :class="currentTab === 'history' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'"
-              class="flex-1 md:flex-initial px-3.5 py-2 text-xs rounded-lg transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-1"
+              :class="currentTab === 'history' ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'"
+              class="flex-1 md:flex-initial min-w-[8rem] px-3.5 py-2 text-xs rounded-2xl transition-all duration-200 whitespace-normal flex items-center justify-center gap-2"
             >
-              <span>📂</span> Historial
+              <span>📂</span>
+              <span>Historial</span>
             </button>
           </nav>
         </div>
       </header>
 
       <!-- Main Content -->
-      <main class="flex-grow max-w-4xl w-full mx-auto p-4 pb-20">
+      <main class="flex-grow min-h-0 max-w-full w-full mx-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
         <!-- NOTIFICACIONES TOAST -->
         <transition name="fade">
           <div
             v-if="toastMessage"
-            class="fixed bottom-6 right-6 z-50 bg-slate-800 border-l-4 border-emerald-500 text-slate-100 px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 max-w-sm"
+            class="fixed bottom-4 left-4 right-4 sm:right-6 z-50 bg-slate-800 border-l-4 border-emerald-500 text-slate-100 px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 max-w-sm mx-auto sm:left-auto"
           >
             <svg
               class="w-6 h-6 text-emerald-400 shrink-0"
@@ -253,7 +323,7 @@
                   class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                 >
                   <!-- Información de Posición, Nombre y Subdivisión -->
-                  <div class="flex items-center gap-3 w-full sm:w-auto">
+                  <div class="flex items-center gap-3 w-full sm:w-auto min-w-0">
                     <!-- Posición en la tabla de clasificación -->
                     <div
                       class="w-8 h-8 rounded-full flex items-center justify-center font-black shrink-0 text-sm"
@@ -727,7 +797,21 @@
 
             <!-- Grid de Selección -->
             <div
-              v-if="players.length < 4"
+              v-if="players.length > 0 && players.length < 4"
+              class="text-center py-6 text-slate-500 border border-dashed border-slate-800 rounded-xl mb-4"
+            >
+              <p class="text-sm font-medium">
+                Ya hay jugadores registrados. Agrega al menos 4 para iniciar la
+                rotación.
+              </p>
+              <p class="text-xs text-slate-400 mt-1">
+                Puedes seleccionar los jugadores disponibles a continuación y
+                completar la lista en la pestaña "Jugadores".
+              </p>
+            </div>
+
+            <div
+              v-if="players.length === 0"
               class="text-center py-12 text-slate-500 border border-dashed border-slate-800 rounded-xl"
             >
               <svg
@@ -744,17 +828,17 @@
                 ></path>
               </svg>
               <p class="text-sm font-medium">
-                Se necesitan mínimo 4 jugadores registrados.
+                No hay jugadores registrados.
               </p>
               <p class="text-xs text-slate-600 mt-1">
-                Registra más competidores en la pestaña de "Jugadores" para
-                poder montar la rotación.
+                Registra jugadores nuevos en la pestaña de "Jugadores" para
+                empezar a seleccionar.
               </p>
             </div>
 
             <div
-              v-else
-              class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1"
+              v-if="players.length > 0"
+              class="grid grid-cols-1 sm:grid-cols-2 gap-3 pr-1"
             >
               <div
                 v-for="player in players"
@@ -1511,6 +1595,82 @@
         </section>
       </main>
 
+      <!-- Navegación inferior para móvil -->
+      <div class="fixed inset-x-0 bottom-0 z-40 bg-slate-950 border-t border-slate-800 shadow-2xl shadow-slate-950/40 sm:hidden">
+        <nav class="mx-auto flex max-w-full items-center justify-between gap-2 px-3 py-3 bg-slate-950">
+          <button
+            @click="currentTab = 'ranking'"
+            :class="currentTab === 'ranking' ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'"
+            class="flex-1 rounded-2xl px-2 py-2 flex items-center justify-center transition-all"
+            aria-label="Clasificación"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3v18h18" />
+              <path d="M18 18V9" />
+              <path d="M12 18V5" />
+              <path d="M6 18v-4" />
+            </svg>
+          </button>
+          <button
+            @click="currentTab = 'players'"
+            :class="currentTab === 'players' ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'"
+            class="flex-1 rounded-2xl px-2 py-2 flex items-center justify-center transition-all"
+            aria-label="Jugadores"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </button>
+          <button
+            @click="currentTab = 'new-round'"
+            :class="currentTab === 'new-round' ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'"
+            class="flex-1 rounded-2xl px-2 py-2 flex items-center justify-center transition-all"
+            aria-label="Jugar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </button>
+          <button
+            @click="currentTab = 'active-round'"
+            :class="currentTab === 'active-round' ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'"
+            class="flex-1 rounded-2xl px-2 py-2 flex items-center justify-center transition-all relative"
+            aria-label="Pista activa"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <path d="M12 4v16" />
+              <path d="M3 12h18" />
+              <path d="M8 4v16" />
+              <path d="M16 4v16" />
+            </svg>
+            <span
+              v-if="activeRound"
+              class="absolute -top-1 -right-2 flex h-3 w-3"
+            >
+              <span
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+              ></span>
+              <span
+                class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"
+              ></span>
+            </span>
+          </button>
+          <button
+            @click="currentTab = 'history'"
+            :class="currentTab === 'history' ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800'"
+            class="flex-1 rounded-2xl px-2 py-2 flex items-center justify-center transition-all"
+            aria-label="Historial"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="8" />
+              <path d="M12 8v4l3 3" />
+            </svg>
+          </button>
+        </nav>
+      </div>
+
       <!-- Modales de confirmación personalizados -->
       <transition name="fade">
         <div
@@ -1662,7 +1822,7 @@
         const loader = document.getElementById("loading-fallback");
         if (loader) {
           loader.innerHTML = `
-                    <div class="text-center p-6 bg-slate-900 border border-slate-800 max-w-sm mx-4 rounded-2xl shadow-2xl">
+                    <div class="text-center p-6 bg-slate-900 border border-slate-800 max-w-full mx-4 sm:mx-auto rounded-2xl shadow-2xl">
                         <div class="text-red-400 font-extrabold text-base mb-2">Error de Entorno Detectado</div>
                         <p class="text-slate-400 text-xs mb-4">El navegador tiene bloqueado el almacenamiento de datos locales (localStorage) en los iframes, o el CDN de Vue falló.</p>
                         <button onclick="window.location.reload()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-all">Reintentar Conexión</button>
@@ -1672,6 +1832,12 @@
       }, 4000);
 
       // CAPA DE PERSISTENCIA COMPLETAMENTE SEGURA Y AISLADA
+      const updateViewportHeight = () => {
+        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+      };
+      updateViewportHeight();
+      window.addEventListener('resize', updateViewportHeight);
+
       const safeStorage = {
         getItem(key) {
           try {
